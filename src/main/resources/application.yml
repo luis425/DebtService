@@ -40,4 +40,5 @@ eureka:
   instance:
     prefer-ip-address: true
     hostname: ${COMPUTERNAME:localhost}  
- 
+customer-api:
+  base-url: http://localhost:8081 

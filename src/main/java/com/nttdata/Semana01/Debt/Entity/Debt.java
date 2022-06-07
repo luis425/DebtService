@@ -5,8 +5,8 @@ import java.util.Date;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.nttdata.Semana01.Debt.DTO.Customer;
+import com.fasterxml.jackson.annotation.JsonFormat; 
+import com.nttdata.Semana01.Debt.Response.CustomerResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +33,6 @@ public class Debt {
 	// Estado 
 	private boolean statusDebt; 
 	
-	private Customer customer;
+	private CustomerResponse customer;
 	
 }

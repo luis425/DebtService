@@ -23,6 +23,8 @@ import com.nttdata.Semana01.Debt.DTO.Bank;
 import com.nttdata.Semana01.Debt.DTO.Customer;
 import com.nttdata.Semana01.Debt.DTO.CustomerType;
 import com.nttdata.Semana01.Debt.Entity.Debt;
+import com.nttdata.Semana01.Debt.Response.CustomerResponse;
+import com.nttdata.Semana01.Debt.Response.DebtResponse;
 import com.nttdata.Semana01.Debt.Service.DebtService;
 
 import lombok.RequiredArgsConstructor;
@@ -50,6 +52,8 @@ public class DebtController {
 
 			List<Customer> customerList = new ArrayList<>();
 
+			CustomerResponse  endpointResponseCustomer = this.debtService.comunicationWebClientObtenerCustomerbyDniResponse(debt.getCustomer().getDniCustomer());
+			
 			/*
 			 * Descomentar para consumir Servicio de CustomerService
 			 * 
@@ -63,22 +67,26 @@ public class DebtController {
 			 * 
 			 */
 
-			// Con Mock
-
+			/*  ---------- Con Mock -------------
+			 
 			customerList = this.comunicationWebClientObtenerCustomerMock();
+			
+			*/
 
 			try {
 
 				// Se agrego un Sleep para detener el proceso para obtener el valor deseado del
 				// Atributo list1
 
-				long temporizador = (6 * 1000);
+				long temporizador = (3 * 1000);
 				Thread.sleep(temporizador);
 
-				if (customerList.isEmpty()) {
+				//if (customerList.isEmpty()) {
+				if (endpointResponseCustomer == null) {	
 					codigoValidator = "";
 				} else {
-					codigoValidator = customerList.get(0).getDniCustomer();
+					codigoValidator = endpointResponseCustomer.getDniCustomer();
+					//codigoValidator = customerList.get(0).getDniCustomer();
 				}
 
 				log.info("Validar Codigo Repetido --->" + codigoValidator);
@@ -92,7 +100,8 @@ public class DebtController {
 
 					debt.setId(UUID.randomUUID().toString());
 					debt.setDateRegister(new Date());
-					debt.setCustomer(customerList.get(0));
+					//debt.setCustomer(customerList.get(0));
+					debt.setCustomer(endpointResponseCustomer);
 					return this.debtService.createDebt(debt);
 				}
 
@@ -146,6 +155,36 @@ public class DebtController {
 		}
 	}
 
+	@GetMapping(value = "/debtbyDniCustomerResponse/{dni}")
+	public Mono<ResponseEntity<DebtResponse>> getDebtByDNICustomerResponse(@PathVariable String dni) {
+
+		try {
+
+			Flux<DebtResponse> debtflux = this.debtService.getAllDebtResponseByDNICustomer(dni);
+
+			List<DebtResponse> list1 = new ArrayList<>();
+
+			debtflux.collectList().subscribe(list1::addAll);
+
+			long temporizador = (5 * 1000);
+
+			Thread.sleep(temporizador);
+
+			if (list1.isEmpty()) {
+				return null;
+
+			} else {
+				return Mono.just(ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(list1.get(0)))
+						.defaultIfEmpty(ResponseEntity.notFound().build());
+			}
+
+		} catch (InterruptedException e) {
+			log.info(e.toString());
+			Thread.currentThread().interrupt();
+			return Mono.error(new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage()));
+		}
+	}
+	
 	@GetMapping(value = "/debtbyDniCustomer/{dni}")
 	public Mono<ResponseEntity<Debt>> getDebtByDNICustomer(@PathVariable String dni) {
 
@@ -157,7 +196,7 @@ public class DebtController {
 
 			debtflux.collectList().subscribe(list1::addAll);
 
-			long temporizador = (5 * 1000);
+			long temporizador = (7 * 1000);
 
 			Thread.sleep(temporizador);
 
